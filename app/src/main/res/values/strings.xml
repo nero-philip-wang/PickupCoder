@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">取件码助手</string>
+    <string name="title_pickup">您的快递取件信息</string>
+    <string name="label_code">取件码</string>
+    <string name="label_station">驿站</string>
+    <string name="label_sender">发送方</string>
+    <string name="label_delivery_time">送达时间</string>
+    <string name="btn_read_sms">读取历史短信</string>
+    <string name="btn_copy_code">复制取件码</string>
+    <string name="empty_hint">暂无提取信息，等待快递短信…</string>
+    <string name="text_original_sms">原始短信内容</string>
+    <string name="permission_required">需要读取短信权限</string>
+    <string name="copied_to_clipboard">已复制到剪贴板</string>
+</resources>
