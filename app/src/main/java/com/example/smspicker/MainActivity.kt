@@ -1,6 +1,7 @@
 package com.example.smspicker
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.BroadcastReceiver
 import android.content.ContentResolver
@@ -14,6 +15,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -64,7 +66,7 @@ class MainActivity : AppCompatActivity() {
     ) { result ->
         val allGranted = result.all { it.value }
         if (allGranted) {
-            loadSmsFromInbox()
+            onPermissionsGranted()
         } else {
             Toast.makeText(this, "未授予短信权限，功能无法使用", Toast.LENGTH_LONG).show()
         }
@@ -184,10 +186,72 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             needed.add(Manifest.permission.POST_NOTIFICATIONS)
         }
+
         if (needed.isNotEmpty()) {
             permissionLauncher.launch(needed.toTypedArray())
         } else {
+            onPermissionsGranted()
+        }
+    }
+
+    private fun onPermissionsGranted() {
+        if (isMiuiDevice() && !SmsStorage.isMiuiDialogShown()) {
+            SmsStorage.setMiuiDialogShown(true)
+            showMiuiPermissionDialog()
+        } else {
             loadSmsFromInbox()
+        }
+    }
+
+    private fun isMiuiDevice(): Boolean {
+        val manufacturer = Build.MANUFACTURER.lowercase()
+        val brand = Build.BRAND.lowercase()
+        val device = Build.DEVICE.lowercase()
+        val model = Build.MODEL.lowercase()
+
+        return manufacturer.contains("xiaomi") ||
+               manufacturer.contains("redmi") ||
+               brand.contains("xiaomi") ||
+               brand.contains("redmi") ||
+               device.contains("xiaomi") ||
+               device.contains("redmi") ||
+               model.contains("mi") ||
+               model.contains("redmi") ||
+               getSystemProperty("ro.miui.ui.version.name").isNotEmpty()
+    }
+
+    private fun getSystemProperty(key: String): String {
+        return try {
+            val clazz = Class.forName("android.os.SystemProperties")
+            val method = clazz.getMethod("get", String::class.java)
+            method.invoke(null, key) as? String ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    private fun showMiuiPermissionDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("需要额外设置")
+            .setMessage("检测到您使用的是小米/红米手机。MIUI 系统将短信权限分为「普通短信」和「通知类短信」，本应用需要同时获取这两类权限。\n\n请在弹出的设置页面中，手动开启「通知类短信」权限。")
+            .setPositiveButton("去设置") { _, _ ->
+                openAppSettings()
+            }
+            .setNegativeButton("暂不开启") { _, _ ->
+                loadSmsFromInbox()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun openAppSettings() {
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:$packageName")
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "无法打开设置页面", Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -15,16 +15,12 @@ object SmsReader {
         val projection = arrayOf(
             Telephony.Sms.ADDRESS,
             Telephony.Sms.BODY,
-            Telephony.Sms.DATE,
-            Telephony.Sms.TYPE
+            Telephony.Sms.DATE
         )
 
         val cutoffTime = System.currentTimeMillis() - (days.toLong() * 24 * 60 * 60 * 1000)
-        val selection = "${Telephony.Sms.TYPE} = ? AND ${Telephony.Sms.DATE} >= ?"
-        val selectionArgs = arrayOf(
-            Telephony.Sms.MESSAGE_TYPE_INBOX.toString(),
-            cutoffTime.toString()
-        )
+        val selection = "${Telephony.Sms.DATE} >= ?"
+        val selectionArgs = arrayOf(cutoffTime.toString())
         val sortOrder = "${Telephony.Sms.DATE} DESC LIMIT $limit"
 
         contentResolver.query(uri, projection, selection, selectionArgs, sortOrder)?.use { cursor ->

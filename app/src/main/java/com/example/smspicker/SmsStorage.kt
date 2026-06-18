@@ -9,6 +9,7 @@ object SmsStorage {
     private const val PREF_NAME = "sms_picker_storage"
     private const val KEY_OUT_IDS = "out_ids"
     private const val KEY_READ_DAYS = "read_days"
+    private const val KEY_MIUI_DIALOG_SHOWN = "miui_dialog_shown"
 
     private lateinit var prefs: SharedPreferences
 
@@ -50,6 +51,14 @@ object SmsStorage {
 
     fun setReadDays(days: Int) {
         prefs.edit().putInt(KEY_READ_DAYS, days).apply()
+    }
+
+    fun isMiuiDialogShown(): Boolean {
+        return prefs.getBoolean(KEY_MIUI_DIALOG_SHOWN, false)
+    }
+
+    fun setMiuiDialogShown(shown: Boolean) {
+        prefs.edit().putBoolean(KEY_MIUI_DIALOG_SHOWN, shown).apply()
     }
 
     fun generateId(body: String, time: Long): String {
